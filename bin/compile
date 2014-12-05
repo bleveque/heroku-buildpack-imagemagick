@@ -44,74 +44,6 @@ function im_heroku6897_download() {
   curl $package -s -o - | tar xzf - -C $location
 }
 
-function imagemagick_download_custom() {
-  local remote location
-  remote="$1"
-  location="$2"
-
-  mkdir -p $location
-  IMDIR="imagemagick"
-  ZIPNAME="ImageMagick6.9.0.tar.gz"
-  package="http://s3.amazonaws.com/labs.floored.com/$ZIPNAME"
-  curl $package -s -o $ZIPNAME
-  echo "ls-ing, should see $ZIPNAME : "
-  ls
-  tar xzf $ZIPNAME
-  echo "ls-ing, should see $IMDIR : "
-  ls
-  mv $IMDIR $location
-  echo "ls-ing $location , should see $IMDIR : "
-  ls -l $location
-  echo "------ $IMDIR: "
-  ls -l $location/$IMDIR
-  echo "------ bin: "
-  ls -l $location/$IMDIR/bin
-  # echo "trying to show version:"
-  # $location/$IMDIR/bin/convert --version
-}
-
-function imagemagick_from_source() {
-  local remote location
-  remote="$1"
-  location="$2"
-
-  mkdir -p $location
-  zipfile="http://archive.ubuntu.com/ubuntu/pool/main/i/imagemagick/imagemagick_6.8.9.9.orig.tar.xz"
-  localzip="imagemagick_6.8.9.9.orig.tar.xz"
-  echo "about to curl"
-  curl $zipfile -s -o $localzip
-  echo "about to ls"
-  ls
-  tar xvzf $localzip
-
-  (
-  cd ImageMagick-6.8.9-9
-  ./configure
-  make 
-  )
-}
-
-function imagemagick_from_deb() {
-  local remote location
-  remote="$1"
-  location="$2"
-
-  mkdir -p $location
-  mkdir TESTDEB
-  remotedebfile="http://mirrors.kernel.org/ubuntu/pool/main/i/imagemagick/imagemagick_6.8.9.9-3_amd64.deb"
-  debfile="imagemagick_6.8.9.9-3_amd64.deb"
-  curl $remotedebfile -s -o $debfile
-  dpkg -i $debfile
-  # (
-  #   cd TESTDEB
-  #   ar vx $debfile
-  #   tar xzvf data.tar.xz
-
-  # )
-  # ar vx $debfile
-  # tar 
-}
-
 # we need this directory, it's our destination
 lib_path=$BUILD_DIR/vendor/imagemagick/lib/
 mkdir -p $lib_path
@@ -146,4 +78,4 @@ echo "Installation completed" | indent
 echo "Building runtime environment for imagemagick" | arrow
 mkdir -p $BUILD_DIR/.profile.d
 echo "export PATH=\"\$HOME/bin:\$PATH\"" > $BUILD_DIR/.profile.d/imagemagick.sh
-echo "export LD_RUN_PATH=\"/app/vendor/imagemagick/lib/:$lib_path:\$LD_RUN_PATH\"" > $BUILD_DIR/.profile.d/imagemagick.sh
+echo "export LD_RUN_PATH=\"$lib_path:\$LD_RUN_PATH\"" > $BUILD_DIR/.profile.d/imagemagick.sh
